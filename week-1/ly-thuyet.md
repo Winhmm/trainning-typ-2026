@@ -46,12 +46,13 @@ Khác với cây nhị phân, một nút trong B+ Tree có thể chứa nhiều 
 
 # PHẦN 3: INDEX
 
-##I. Clustered Index là gì?
+## I. Clustered Index là gì?
+
 Clustered Index là một loại Index dùng để tổ chức dữ liệu trong bảng theo thứ tự của một cột. Có thể hiểu đơn giản là nó vừa là Index để tìm kiếm, vừa quyết định cách dữ liệu trong bảng được tổ chức theo thứ tự của Index đó.
 
 Ví dụ, nếu sử dụng cột ID làm Clustered Index thì dữ liệu sẽ được tổ chức theo thứ tự của ID. Nhờ dữ liệu được tổ chức theo thứ tự này, Database có thể tìm kiếm dữ liệu dựa trên ID hiệu quả hơn.
 
-##II. Đặc điểm của Clustered Index
+## II. Đặc điểm của Clustered Index
 
 1. Dữ liệu được tổ chức theo Index
 
@@ -70,13 +71,13 @@ Ví dụ, nếu sử dụng cột ID làm Clustered Index thì dữ liệu sẽ 
 
 # PHẦN 4: INDEX
 
-##I. Non-Clustered Index là gì?
+## I. Non-Clustered Index là gì?
 
 Non-Clustered Index là một loại Index được tạo riêng bên ngoài dữ liệu của bảng, dùng để giúp Database tìm kiếm dữ liệu nhanh hơn. Có thể hiểu đơn giản là Non-Clustered Index giống như một bảng tra cứu, lưu giá trị của cột được đánh Index và thông tin giúp Database tìm đến bản ghi tương ứng trong bảng.
 
 Ví dụ, nếu tạo Non-Clustered Index trên cột Name, Index sẽ lưu các giá trị của Name theo thứ tự và thông tin để Database tìm đến dữ liệu tương ứng trong bảng.
 
-##II. Đặc điểm của Non-Clustered Index
+## II. Đặc điểm của Non-Clustered Index
 
 1. Không tổ chức trực tiếp dữ liệu trong bảng
 
