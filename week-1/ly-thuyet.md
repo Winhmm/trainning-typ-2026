@@ -48,56 +48,55 @@ Khác với cây nhị phân, một nút trong B+ Tree có thể chứa nhiều 
 
 ## I. Clustered Index là gì?
 
-Clustered Index là một loại Index dùng để tổ chức dữ liệu trong bảng theo thứ tự của một cột. Có thể hiểu đơn giản là nó vừa là Index để tìm kiếm, vừa quyết định cách dữ liệu trong bảng được tổ chức theo thứ tự của Index đó.
+Clustered Index là một loại Index dùng để tổ chức dữ liệu trong bảng theo thứ tự của một cột. Có thể hiểu đơn giản là nó vừa là Index để tìm kiếm, vừa quyết định cách dữ liệu trong bảng được tổ chức theo thứ tự của Index đó. 
 
-Ví dụ, nếu sử dụng cột ID làm Clustered Index thì dữ liệu sẽ được tổ chức theo thứ tự của ID. Nhờ dữ liệu được tổ chức theo thứ tự này, Database có thể tìm kiếm dữ liệu dựa trên ID hiệu quả hơn.
+Ví dụ, nếu sử dụng cột ID làm Clustered Index thì dữ liệu sẽ được tổ chức theo thứ tự của ID. Nhờ dữ liệu được tổ chức theo thứ tự này, Database có thể tìm kiếm dữ liệu dựa trên ID hiệu quả hơn. 
 
 ## II. Đặc điểm của Clustered Index
 
-1. Dữ liệu được tổ chức theo Index
+### 1. Dữ liệu được tổ chức theo Index
 
-- Clustered Index gắn trực tiếp với cách dữ liệu trong bảng được tổ chức.
-- Nếu Clustered Index sử dụng cột ID, dữ liệu sẽ được tổ chức theo thứ tự của ID.
+Các bản ghi trong bảng được tổ chức theo thứ tự của khóa Clustered Index. Vì vậy, Clustered Index không chỉ lưu thông tin để tìm kiếm mà còn liên quan trực tiếp đến cách dữ liệu của bảng được lưu trữ. 
 
-2. Một bảng chỉ có một Clustered Index
+### 2. Một bảng chỉ có một Clustered Index
 
-- Lý do là dữ liệu trong bảng chỉ có thể được tổ chức theo một thứ tự chính.
-- Ví dụ, không thể vừa tổ chức dữ liệu chính theo ID, vừa tổ chức dữ liệu chính theo Name.
+Một bảng chỉ có thể có một Clustered Index, vì dữ liệu của bảng không thể đồng thời được tổ chức theo nhiều thứ tự khác nhau.
+ 
+### 3. Có thể được tạo trên Primary Key
 
-3. Có thể được tạo trên Primary Key
+Trong nhiều hệ quản trị cơ sở dữ liệu, Primary Key thường được sử dụng làm Clustered Index mặc định nếu không có Clustered Index khác. Tuy nhiên, Primary Key và Clustered Index là hai khái niệm khác nhau. 
 
-- Primary Key dùng để xác định duy nhất một bản ghi.
-- Primary Key và Clustered Index không phải là cùng một khái niệm.
+### 4. Có thể tạo trên một hoặc nhiều cột 
+
+Clustered Index có thể được tạo dựa trên một cột hoặc nhiều cột. Khi có nhiều cột, thứ tự của các cột trong Index sẽ ảnh hưởng đến cách dữ liệu được tổ chức và khả năng sử dụng Index khi truy vấn. 
+
+### 5. Hỗ trợ tốt cho truy vấn theo khoảng 
+
+Do dữ liệu được tổ chức theo thứ tự của Clustered Index, nó đặc biệt hữu ích đối với các truy vấn tìm kiếm theo khoảng giá trị, chẳng hạn như điều kiện BETWEEN, >, <, >=, <= hoặc sắp xếp theo cột được đánh Clustered Index.
 
 # PHẦN 4: INDEX
 
 ## I. Non-Clustered Index là gì?
 
-Non-Clustered Index là một loại Index được tạo riêng bên ngoài dữ liệu của bảng, dùng để giúp Database tìm kiếm dữ liệu nhanh hơn. Có thể hiểu đơn giản là Non-Clustered Index giống như một bảng tra cứu, lưu giá trị của cột được đánh Index và thông tin giúp Database tìm đến bản ghi tương ứng trong bảng.
+Non-Clustered Index là một loại Index được tạo riêng bên ngoài dữ liệu của bảng, dùng để giúp Database tìm kiếm dữ liệu nhanh hơn. Có thể hiểu đơn giản là Non-Clustered Index giống như một bảng tra cứu, lưu giá trị của cột được đánh Index và thông tin giúp Database tìm đến bản ghi tương ứng trong bảng. 
 
 Ví dụ, nếu tạo Non-Clustered Index trên cột Name, Index sẽ lưu các giá trị của Name theo thứ tự và thông tin để Database tìm đến dữ liệu tương ứng trong bảng.
 
 ## II. Đặc điểm của Non-Clustered Index
 
-1. Không tổ chức trực tiếp dữ liệu trong bảng
+### 1. Không tổ chức trực tiếp dữ liệu trong bảng
 
-- Non-Clustered Index được lưu riêng với dữ liệu của bảng.
-- Nó không quyết định thứ tự tổ chức dữ liệu chính trong bảng.
-- Index lưu thông tin giúp Database tìm đến bản ghi cần tìm.
+Non-Clustered Index được lưu trữ riêng với dữ liệu của bảng. Nó chứa giá trị của cột được đánh Index và thông tin giúp Database xác định bản ghi tương ứng. 
 
-2. Một bảng có thể có nhiều Non-Clustered Index
+### 2. Một bảng có thể có nhiều Non-Clustered Index 
 
-- Một bảng có thể có nhiều Non-Clustered Index.
-- Mỗi Non-Clustered Index có thể được tạo trên một hoặc nhiều cột khác nhau.
-- Điều này giúp Database tối ưu nhiều loại truy vấn tìm kiếm khác nhau.
+Một bảng có thể có nhiều Non-Clustered Index trên các cột khác nhau, tùy vào nhu cầu truy vấn. 
 
-3. Không giống Clustered Index
+### 3. Không giống Clustered Index
 
-- Clustered Index tổ chức dữ liệu của bảng theo Index.
-- Non-Clustered Index được lưu riêng và dùng để tìm đến dữ liệu trong bảng.
-- Một bảng chỉ có tối đa một Clustered Index nhưng có thể có nhiều Non-Clustered Index.
+Khác với Clustered Index, Non-Clustered Index không tổ chức dữ liệu của bảng theo thứ tự của Index. Nó chỉ cung cấp một cấu trúc riêng để Database tìm đến dữ liệu cần thiết. 
 
-4. Có thể chứa nhiều cột
+### 4. Có thể được tạo trên một hoặc nhiều cột 
 
-- Non-Clustered Index có thể được tạo trên một cột hoặc nhiều cột.
-- Khi Index được tạo trên nhiều cột, Database có thể sử dụng Index đó cho các truy vấn liên quan đến các cột được đánh Index.
+Non-Clustered Index có thể được tạo dựa trên một cột hoặc nhiều cột. 
+
