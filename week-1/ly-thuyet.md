@@ -100,3 +100,30 @@ Khác với Clustered Index, Non-Clustered Index không tổ chức dữ liệu 
 
 Non-Clustered Index có thể được tạo dựa trên một cột hoặc nhiều cột. 
 
+# PHẦN 2: OOP
+
+## I. Đóng gói
+
+Đóng gói là việc che giấu dữ liệu bên trong đối tượng và chỉ cho phép truy cập thông qua những phương thức được cung cấp. Trong đó, các access modifier phổ biến bao gồm: private, public, protected. 
+
+Getter và Setter là các phương thức thường được sử dụng để cung cấp cách truy cập hoặc thay đổi dữ liệu đã được đóng gói. Không phải mọi thuộc tính đều bắt buộc phải có cả Getter và Setter, việc cung cấp phương thức nào phụ thuộc vào yêu cầu của đối tượng và mức độ truy cập dữ liệu mong muốn.
+
+## II. Kế thừa
+
+Kế thừa là cơ chế cho phép một class mới (class con) kế thừa các thuộc tính và phương thức từ một class có sẵn (class cha). Khi đó, class con có thể sử dụng lại những thành phần được kế thừa và có thể bổ sung thêm các thuộc tính, phương thức riêng hoặc thay đổi cách hoạt động của một số phương thức phù hợp với yêu cầu.
+
+Ngoài ra, class con còn có thể giữ lại tên và cấu trúc phương thức phù hợp với phương thức của class cha nhưng có thể thay đổi phần xử lý bên trong thông qua ghi đè phương thức (Method Overriding).
+
+## III. Đa hình
+
+Đa hình là khả năng cho phép cùng một phương thức hoặc cùng một cách sử dụng nhưng có thể thực hiện những hành vi khác nhau tùy thuộc vào đối tượng hoặc ngữ cảnh cụ thể.
+
+Đa hình Runtime là lớp con viết lại phương thức của lớp cha sao cho phù hợp và quyết định hàm nào sẽ được gọi khi chương trình đang chạy.
+
+Đa hình Complie là cùng một tên hàm nhưng khác số lượng, kiểu tham số và quyết định hàm nào được gọi diễn ra ngay khi biên dịch.
+
+## IV. Trừu tượng
+Định nghĩa đối tượng làm được gì mà không cần quan tâm nó thực hiện như thế nào.
+
+Sử dụng Abstract cho các đối tượng cùng loại, Interface cho các hành vi chung.
+
