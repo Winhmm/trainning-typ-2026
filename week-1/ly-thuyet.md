@@ -127,3 +127,16 @@ Ngoài ra, class con còn có thể giữ lại tên và cấu trúc phương th
 
 Sử dụng Abstract cho các đối tượng cùng loại, Interface cho các hành vi chung.
 
+# PHẦN 3: Transaction
+Transaction (giao dịch) là một nhóm các thao tác trên Database được thực hiện như một đơn vị duy nhất. Hoặc có thể hiểu đơn giản là tất cả thao tác thành công, hoặc nếu có lỗi thì tất cả được hoàn tác.
+
+Ví dụ:
+
+Một người chuyển 100.000đ cho người khác thì trừ 100.000đ ở tài khoản A và cộng 100.000đ vào tài khoản B.
+
+Hai thao tác này phải thuộc cùng một Transaction.
+
+- Nếu cả 2 thành công: COMMIT → lưu dữ liệu.
+- Nếu bước 2 lỗi: ROLLBACK → hoàn tác bước 1.
+
+Nếu không có Transaction thì nếu tiền vừa rời A chưa kịp đến B mà Server lỗi thì A bị trừ tiền và B thì chưa nhận được tiền.
