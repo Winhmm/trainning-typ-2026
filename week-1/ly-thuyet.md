@@ -139,4 +139,4 @@ Hai thao tác này phải thuộc cùng một Transaction.
 - Nếu cả 2 thành công: COMMIT → lưu dữ liệu.
 - Nếu bước 2 lỗi: ROLLBACK → hoàn tác bước 1.
 
-Nếu không có Transaction thì nếu tiền vừa rời A chưa kịp đến B mà Server lỗi thì A bị trừ tiền và B thì chưa nhận được tiền.
+Nếu không có Transaction thì tiền vừa rời A chưa kịp đến B mà Server lỗi thì A bị trừ tiền và B thì chưa nhận được tiền.
