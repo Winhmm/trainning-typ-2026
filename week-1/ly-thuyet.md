@@ -100,6 +100,14 @@ Khác với Clustered Index, Non-Clustered Index không tổ chức dữ liệu 
 
 Non-Clustered Index có thể được tạo dựa trên một cột hoặc nhiều cột. 
 
+### 5. Khi nào dùng index
+
+Ta sẽ dùng index khi mà kết quả trả về chọn lọc nó cao (email, username), tuyệt đối không đánh index trên cột giới tính vì trả về tỉ lệ sẽ 50% nam và 50% nữ (không có tính chọn lọc cao), lý tưởng đánh index trả về khoảng 5%. 
+
+Giả sử, ta có bảng nhân viên 2000 dòng, ta cần tìm tất cả nhân viên là nam.
+
+Đánh index xong để chọc vào dữ liệu gốc (ta cần truy hết thông tin về nhân viên đó ) thì ta gọi là access random tốn khoảng 0.7s (ví dụ), thì giả sử kết quả trả về tận 1000 kết quả thì thời gian là 700s, trong khi nếu mà ta duyệt tuần tự chỉ tốn 0.1s với 2000 dòng thì là 200s, rõ ràng ta sẽ chọn duyệt tuần tự.
+
 # PHẦN 2: OOP
 
 ## I. Đóng gói
