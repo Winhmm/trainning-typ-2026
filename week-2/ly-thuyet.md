@@ -38,6 +38,7 @@ Trong kiến trúc phân tầng của ứng dụng Spring Boot, Repository thư�
 Cách tổ chức này giúp mỗi tầng đảm nhiệm một trách nhiệm riêng biệt, hạn chế sự phụ thuộc giữa logic nghiệp vụ và cơ chế lưu trữ dữ liệu. Nhờ đó, ứng dụng trở nên dễ quản lý, thuận tiện cho việc kiểm thử và có khả năng mở rộng tốt hơn khi yêu cầu nghiệp vụ thay đổi.
 
 **PHẦN 2**
+
 **I. Entity là gì?**
 
 Trong Spring Boot, Entity là một lớp Java được sử dụng để ánh xạ với bảng tương ứng trong cơ sở dữ liệu thông qua JPA (Java Persistence API). Mỗi đối tượng của lớp Entity đại diện cho một bản ghi trong bảng dữ liệu, trong khi các thuộc tính của lớp thường tương ứng với các cột trong bảng.
