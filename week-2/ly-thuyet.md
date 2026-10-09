@@ -1,3 +1,4 @@
+*PHẦN 1*
 **I. Repository là gì?**
 
 Trong Spring Boot, Repository là thành phần thuộc tầng truy cập dữ liệu (Data Access Layer), có nhiệm vụ trung gian giữa tầng xử lý nghiệp vụ và cơ sở dữ liệu. Repository cung cấp các phương thức để thực hiện những thao tác như thêm mới, truy vấn, cập nhật và xóa dữ liệu mà không cần phải tự viết toàn bộ câu lệnh SQL cho các thao tác thông thường.
@@ -34,3 +35,23 @@ Ngoài ra, annotation ***@Query*** cho phép khai báo truy vấn bằng JPQL ho
 Trong kiến trúc phân tầng của ứng dụng Spring Boot, Repository thường được Service sử dụng để truy xuất và thao tác với dữ liệu. Service chịu trách nhiệm xử lý logic nghiệp vụ, còn Repository tập trung vào hoạt động truy cập dữ liệu. Controller tiếp nhận các yêu cầu từ Client và gọi đến Service để xử lý.
 
 Cách tổ chức này giúp mỗi tầng đảm nhiệm một trách nhiệm riêng biệt, hạn chế sự phụ thuộc giữa logic nghiệp vụ và cơ chế lưu trữ dữ liệu. Nhờ đó, ứng dụng trở nên dễ quản lý, thuận tiện cho việc kiểm thử và có khả năng mở rộng tốt hơn khi yêu cầu nghiệp vụ thay đổi.
+
+*PHẦN 2*
+**I. Entity là gì?**
+
+Trong Spring Boot, Entity là một lớp Java được sử dụng để ánh xạ với bảng tương ứng trong cơ sở dữ liệu thông qua JPA (Java Persistence API). Mỗi đối tượng của lớp Entity đại diện cho một bản ghi trong bảng dữ liệu, trong khi các thuộc tính của lớp thường tương ứng với các cột trong bảng.
+
+Trong dự án, Entity được sử dụng để mô hình hóa các đối tượng dữ liệu của hệ thống, phục vụ việc lưu trữ và quản lý thông tin trên cơ sở dữ liệu MySQL. Thông qua Hibernate, một framework triển khai JPA phổ biến, hệ thống có thể thực hiện các thao tác lưu trữ, truy vấn, cập nhật và xóa dữ liệu thông qua các đối tượng Java.
+
+**II. Vai trò của Entity**
+
+Entity đóng vai trò mô hình hóa và quản lý dữ liệu trong ứng dụng. Việc sử dụng Entity giúp tổ chức cấu trúc dữ liệu thành các lớp Java có ý nghĩa rõ ràng, đồng thời hỗ trợ ánh xạ giữa các đối tượng trong chương trình và các bảng trong cơ sở dữ liệu.
+
+Bên cạnh đó, Entity cho phép xác định các thuộc tính dữ liệu, khóa chính, các ràng buộc và mối quan hệ giữa những đối tượng có liên quan. Khi kết hợp với Spring Data JPA và Repository, Entity hỗ trợ quá trình thao tác với cơ sở dữ liệu một cách thuận tiện, giảm sự phụ thuộc vào việc viết các câu lệnh SQL thủ công và giúp mã nguồn dễ bảo trì, mở rộng hơn.
+
+**III. Entity trong kiến trúc ứng dụng Spring Boot**
+
+Trong kiến trúc phân tầng của ứng dụng Spring Boot, Entity thường thuộc nhóm mô hình dữ liệu và chịu trách nhiệm biểu diễn cấu trúc dữ liệu được lưu trữ trong cơ sở dữ liệu. Entity thường được sử dụng kết hợp với Repository để thực hiện các thao tác truy xuất dữ liệu, trong khi Service đảm nhiệm việc xử lý nghiệp vụ và Controller tiếp nhận, xử lý các yêu cầu HTTP.
+
+Ngoài ra, Entity có thể được sử dụng cùng với DTO (Data Transfer Object) để phân biệt mô hình dữ liệu được quản lý trong hệ thống với dữ liệu trao đổi giữa các thành phần hoặc giữa Backend và Client. Cách tổ chức này giúp phân tách trách nhiệm giữa các tầng, hạn chế sự phụ thuộc không cần thiết và nâng cao khả năng bảo trì, kiểm thử cũng như mở rộng ứng dụng.
+
