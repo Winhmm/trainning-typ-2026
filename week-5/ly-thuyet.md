@@ -1,106 +1,78 @@
-# Caching và Redis trong MySpotify
+# Caching và Redis
 
 ## 1. Caching
 
-**Cache** là bản sao tạm của dữ liệu hay dùng, đặt ở nơi đọc nhanh hơn database.
-VD: `GET /api/genres` không cần SELECT MySQL mỗi lần, đọc từ Redis (RAM) nhanh hơn và giảm tải MySQL.
-Đổi lại: dữ liệu có thể **cũ**, code phức tạp hơn.
+**Caching là gì?** Cache là nơi lưu tạm bản sao của dữ liệu hay dùng, đặt ở chỗ đọc nhanh hơn nơi lưu gốc (thường là RAM thay vì database trên ổ đĩa).
 
-**Cache ở đâu:**
+**Tại sao cần?**
+- Tăng tốc độ phản hồi.
+- Giảm tải cho database.
+- Phục vụ được nhiều người dùng hơn với cùng cấu hình server.
 
-| | Application-level | Distributed |
+Đổi lại, dữ liệu trong cache có thể bị cũ, và hệ thống phức tạp hơn.
+
+**Cache ở đâu?** Trình duyệt, CDN, trong ứng dụng, cache server riêng, bộ đệm của database.
+
+| | Application-level cache | Distributed cache |
 |---|---|---|
-| Ví dụ | `HashMap`, Caffeine (RAM của app) | Redis |
-| Restart app | Mất | Còn |
-| Nhiều server | Mỗi server 1 bản, dễ lệch | Dùng chung |
+| Vị trí | Trong RAM của chính ứng dụng | Server cache riêng (VD Redis) |
+| Tốc độ | Nhanh nhất | Rất nhanh (qua mạng) |
+| Khởi động lại ứng dụng | Mất dữ liệu | Vẫn còn |
+| Nhiều server ứng dụng | Mỗi server 1 bản, dễ lệch | Dùng chung 1 bản |
 
-MySpotify chọn **Redis** vì đã có sẵn (đang dùng cho session, rate limit, OTP, chống tăng lượt nghe).
+**Khi nào nên cache?** Dữ liệu được đọc nhiều, ít thay đổi, giống nhau cho nhiều người, chấp nhận được việc cũ một chút.
 
-**Khi nào cache:**
+**Khi nào không nên?** Dữ liệu thay đổi liên tục, cần chính xác tuyệt đối (tiền, quyền truy cập, bảo mật), hoặc có quá nhiều tổ hợp khác nhau nên ít được dùng lại.
 
-| Dữ liệu | Cache? | Lý do |
-|---|---|---|
-| 25 thể loại | Nên | Đọc nhiều, gần như không đổi |
-| Lời bài hát | Nên | Ít đổi |
-| Danh sách bài, tìm kiếm | Không | Quá nhiều tổ hợp, bài hẹn giờ xuất hiện theo thời gian |
-| Trạng thái tài khoản, `access_status` | Không | Bảo mật, phải có hiệu lực ngay; lại được sửa bằng SQL trực tiếp |
+## 2. Chiến lược Caching
 
-## 2. Chiến lược
+**Cache-Aside:** ứng dụng tự quản lý cache. Khi đọc, ứng dụng kiểm tra cache trước. Nếu có thì trả về ngay, nếu không thì đọc database rồi lưu vào cache kèm thời gian sống. Khi dữ liệu thay đổi, ứng dụng cập nhật database rồi xóa cache tương ứng.
 
-- **Cache-Aside:** đọc cache → miss → query DB → ghi cache kèm TTL. Khi dữ liệu đổi: **ghi DB rồi `DEL` key** (không ghi đè, tránh 2 request ghi lệch nhau).
-- **Write-Through:** mỗi lần ghi thì ghi cả DB và cache. Đọc luôn nhanh, nhưng ghi chậm hơn và cache cả dữ liệu không ai đọc.
+**Write-Through:** mỗi lần ghi, dữ liệu được ghi vào cả cache và database cùng lúc, nên cache luôn có dữ liệu mới nhất.
 
 | | Cache-Aside | Write-Through |
 |---|---|---|
-| Dùng khi | Đọc nhiều, ghi ít (phổ biến nhất) | Ghi xong cần đọc ngay |
-| Redis lỗi | Vẫn chạy (đọc DB) | Phải xử lý lỗi khi ghi |
-| MySpotify | Thể loại nhạc | Lời bài hát |
+| Đọc lần đầu | Chậm (cache miss) | Nhanh |
+| Ghi | Nhanh | Chậm hơn (ghi 2 nơi) |
+| Dữ liệu trong cache | Chỉ dữ liệu được đọc | Mọi dữ liệu được ghi |
+| Khi cache lỗi | Vẫn chạy, đọc database | Ảnh hưởng thao tác ghi |
+| Phù hợp | Đọc nhiều, ghi ít (phổ biến nhất) | Dữ liệu vừa ghi cần đọc ngay |
 
 ## 3. Redis cơ bản
 
-Redis là database **key → value trong RAM**, rất nhanh, key có **TTL** tự hết hạn, lệnh `INCR`/`SET NX` là nguyên tử.
+**Redis** là database lưu dữ liệu trong RAM theo dạng key - value, tốc độ rất cao, thường dùng làm cache, lưu phiên đăng nhập, bộ đếm, hàng đợi. Mỗi key có thể đặt thời gian sống, hết hạn thì tự xóa.
 
-| Kiểu | Ví dụ MySpotify |
-|---|---|
-| String | `session:{email}`, `rate:user:{email}` |
-| Hash | `cache:genres` → `{1: "Pop", 2: "V-Pop"}` |
-| List | 10 bài nghe gần nhất (`LPUSH` + `LTRIM`) |
-| Set | Id bài đã thích |
-| Sorted Set | Bảng xếp hạng lượt nghe (`ZINCRBY`) |
+**Kiểu dữ liệu:**
+- **String:** một key ứng với một giá trị (chữ, số, JSON).
+- **Hash:** một key chứa nhiều cặp trường - giá trị, giống một object.
+- **List:** danh sách có thứ tự, thêm và lấy ở hai đầu.
+- **Set:** tập hợp các phần tử không trùng nhau.
+- **Sorted Set:** tập hợp có điểm số, tự sắp xếp theo điểm (dùng cho bảng xếp hạng).
 
-```bash
-SET key value EX 60    # ghi, sống 60 giây
-GET key
-DEL key
-EXPIRE key 60
-TTL key                # -1: không hạn, -2: không tồn tại
+**Lệnh cơ bản:**
+- **SET:** ghi giá trị cho một key.
+- **GET:** đọc giá trị của một key.
+- **DEL:** xóa một key.
+- **EXPIRE:** đặt thời gian sống cho key.
+- **TTL:** xem key còn sống bao lâu (-1 là không có hạn, -2 là không tồn tại).
 
-docker run -d --name myspotify-redis -p 6379:6379 redis:7.4
-docker exec -it myspotify-redis redis-cli ping   # PONG
-```
+**Cài đặt bằng Docker:** tải image Redis chính thức, chạy container và mở cổng 6379. Sau đó dùng công cụ dòng lệnh `redis-cli` để kết nối và kiểm tra.
 
-## 4. Implement (Spring Boot)
+## 4. Tích hợp Redis vào project
 
-Đã có sẵn: `spring-boot-starter-data-redis` (client **Lettuce**), cấu hình `spring.data.redis.host/port`, dùng `StringRedisTemplate`.
+1. Cài Redis và thêm thư viện client cho ngôn ngữ đang dùng (Java: Jedis hoặc Lettuce; Node: redis; Python: redis-py).
+2. Cấu hình kết nối: địa chỉ, cổng, mật khẩu (nếu có).
+3. Áp dụng Cache-Aside cho dữ liệu như thông tin sản phẩm, người dùng:
+   - Request đến, kiểm tra cache theo key.
+   - Có dữ liệu thì trả về ngay.
+   - Không có thì truy vấn database, lưu kết quả vào cache với TTL, rồi trả về.
 
-Cache thể loại nhạc trong `SongService` (Cache-Aside, Hash, TTL 24 giờ):
+## 5. Các vấn đề thường gặp
 
-```java
-public List<GenreResponse> getGenres() {
-    try {
-        Map<Object, Object> cached = redisTemplate.opsForHash().entries("cache:genres");
-        if (!cached.isEmpty()) {
-            List<GenreResponse> result = new ArrayList<>();
-            cached.forEach((id, name) -> result.add(new GenreResponse(Long.valueOf((String) id), (String) name)));
-            result.sort(Comparator.comparing(GenreResponse::getName, String.CASE_INSENSITIVE_ORDER));
-            return result;                                   // cache hit
-        }
-    } catch (Exception e) { }                                // Redis lỗi → đọc DB
+**TTL:** dữ liệu càng ít thay đổi và càng chấp nhận được việc cũ thì TTL càng dài. TTL quá ngắn làm cache ít tác dụng, quá dài làm người dùng thấy dữ liệu cũ lâu.
 
-    List<GenreResponse> result = genreRepository.findAllByOrderByNameAsc()
-            .stream().map(SongMapper::toGenreResponse).toList();   // cache miss
+**Cache Invalidation:** khi dữ liệu thay đổi, phải xóa hoặc cập nhật cache để tránh trả dữ liệu cũ. Cách phổ biến là cập nhật database trước rồi xóa cache, để lần đọc sau tự nạp lại dữ liệu mới.
 
-    try {
-        Map<String, String> hash = new HashMap<>();
-        result.forEach(g -> hash.put(String.valueOf(g.getId()), g.getName()));
-        if (!hash.isEmpty()) {
-            redisTemplate.opsForHash().putAll("cache:genres", hash);
-            redisTemplate.expire("cache:genres",
-                    Duration.ofHours(24).plusMinutes(ThreadLocalRandom.current().nextInt(0, 61)));
-        }
-    } catch (Exception e) { }
+**Cache Avalanche:** rất nhiều key hết hạn cùng lúc (hoặc cache server bị sập), khiến mọi request đổ dồn vào database và làm database quá tải. Cách xử lý: cộng thêm thời gian ngẫu nhiên vào TTL, chạy cache dự phòng, giới hạn số request, nạp sẵn cache khi khởi động.
 
-    return result;
-}
-```
-
-Thêm thể loại bằng SQL → chạy `redis-cli DEL cache:genres`.
-
-## 5. Vấn đề thường gặp
-
-| Vấn đề | Là gì | Cách xử lý |
-|---|---|---|
-| **TTL** | Sống bao lâu | Càng ít đổi càng dài: thể loại 24 giờ, chi tiết bài 30 - 60 giây |
-| **Invalidation** | Data đổi mà cache còn cũ | Ghi DB rồi `DEL` key ở **mọi chỗ** sửa dữ liệu; sửa bằng SQL thì `DEL` bằng tay |
-| **Avalanche** | Nhiều key hết hạn cùng lúc → DB quá tải | TTL + số ngẫu nhiên (jitter), rate limit |
-| **Penetration** | Hỏi data không tồn tại → luôn miss → luôn query DB | Cache giá trị `"__NULL__"` 60 giây, kiểm tra input, rate limit |
+**Cache Penetration:** truy vấn dữ liệu không tồn tại nên không bao giờ có trong cache, mọi request đều xuống database. Cách xử lý: lưu cả kết quả "không tồn tại" vào cache với TTL ngắn, kiểm tra dữ liệu đầu vào, giới hạn số request, dùng Bloom filter.
