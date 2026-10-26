@@ -1,0 +1,50 @@
+## 1. Tìm hiểu Caching
+
+### 1.1. Caching là gì? Tại sao cần?
+
+**Cache** là nơi giữ tạm **bản sao** của dữ liệu hay dùng, đặt ở chỗ **đọc nhanh hơn** nơi lưu gốc.
+
+Ví dụ trong MySpotify: mỗi lần mở form đăng bài hoặc trang Genres, frontend gọi `GET /api/genres`.
+
+```
+Không có cache:
+  Mỗi request ──► SELECT * FROM genres ORDER BY name ──► MySQL (đọc ổ đĩa/bộ nhớ đệm của MySQL)
+  100 người mở trang = 100 câu SELECT giống hệt nhau, kết quả giống hệt nhau
+
+Có cache:
+  Request đầu tiên ──► Redis không có ──► MySQL ──► lưu kết quả vào Redis
+  99 request sau   ──► Redis có sẵn (nằm trong RAM) ──► trả ngay, không đụng MySQL
+```
+
+Lợi ích:
+- **Nhanh hơn:** Redis đọc từ RAM, thường dưới 1 mili giây.
+- **Giảm tải database:** MySQL rảnh tay cho các việc ghi, tìm kiếm phức tạp.
+- **Chịu được nhiều người dùng hơn** với cùng 1 cấu hình server.
+
+Cái giá phải trả:
+- Dữ liệu trong cache có thể **cũ** so với database (stale data).
+- Code phức tạp hơn: phải nghĩ khi nào xóa cache, cache sống bao lâu.
+- Tốn thêm RAM.
+
+### 1.3. Khi nào nên cache, khi nào không nên?
+
+**Nên cache** khi dữ liệu:
+- Được **đọc nhiều**, **ít thay đổi**.
+- Giống nhau cho mọi người (hoặc cho nhiều người).
+- Chấp nhận được việc **cũ đi một chút**.
+
+**Không nên cache** khi dữ liệu:
+- Thay đổi liên tục.
+- Phải luôn chính xác tuyệt đối (tiền, quyền truy cập, bảo mật).
+- Có quá nhiều tổ hợp khác nhau (tỉ lệ dùng lại thấp).
+
+## 3. Redis cơ bản
+
+### 3.1. Redis là gì?
+
+**Redis** (REmote DIctionary Server) là database **lưu toàn bộ dữ liệu trong RAM**, dạng **key → value**.
+- Rất nhanh, chạy được hàng chục nghìn lệnh mỗi giây trên máy thường.
+- Mỗi key có thể đặt **thời gian sống (TTL)**, hết hạn Redis tự xóa.
+- Các lệnh như `INCR`, `SET NX` là **nguyên tử** (atomic): nhiều request cùng lúc cũng không bị đếm sai.
+  MySpotify dựa vào điều này cho rate limit và đếm số lần nhập sai OTP.
+- Có thể lưu xuống đĩa (RDB, AOF), nhưng thường dùng cho dữ liệu tạm.
